@@ -47,17 +47,17 @@ void setup() {
     Wire.begin();
 
     // Initialize MPU6500
-    if (!mpu.init()) {
-        Serial.println("MPU6500 not detected!");
-        while (1);
-    }
+    // if (!mpu.init()) {
+    //     Serial.println("MPU6500 not detected!");
+    //     while (1);
+    // }
 
-    mpu.enableGyrDLPF();
-    mpu.setGyrDLPF(MPU6500_DLPF_6);
-    mpu.setAccDLPF(MPU6500_DLPF_6);
+    // mpu.enableGyrDLPF();
+    // mpu.setGyrDLPF(MPU6500_DLPF_6);
+    // mpu.setAccDLPF(MPU6500_DLPF_6);
 
-    Serial.println("MPU6500 Initialized Successfully!");
-    calibrateMPU6500();  
+    // Serial.println("MPU6500 Initialized Successfully!");
+    // calibrateMPU6500();  
     lastTime = millis();
 
     // **Calibrate Flex Sensors**
@@ -172,7 +172,7 @@ void loop() {
 
     Serial.println();
 
-    delay(500);  
+    delay(100);  
 }
 
 // **Function to Read Flex Sensor Resistance**
