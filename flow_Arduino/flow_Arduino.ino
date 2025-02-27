@@ -18,10 +18,10 @@ const float STRAIGHT_THRESHOLD = 45.0;
 const float PARTIALLY_BENT_THRESHOLD = 180.0;
 
 // Touch Sensors
-const int finger1Pin = 2;
-const int finger2Pin = 3;
-const int finger3Pin = 4;
-const int finger4Pin = 5;
+const int finger1Pin = 50;
+const int finger2Pin = 51;
+const int finger3Pin = 52;
+const int finger4Pin = 53;
 
 // Data Structures
 struct GyroData {
@@ -47,10 +47,10 @@ void setup() {
   Wire.begin();
 
   // Gyro Setup
-  if (!mpu6500.init()) {
-    Serial.println("MPU6500 Connection Failed!");
-    while (1);
-  }
+  // if (!mpu6500.init()) {
+  //   Serial.println("MPU6500 Connection Failed!");
+  //   while (1);
+  // }
   mpu6500.enableGyrDLPF();
   mpu6500.setGyrDLPF(5);
   mpu6500.setGyrRange(MPU6500_GYRO_RANGE_250);
