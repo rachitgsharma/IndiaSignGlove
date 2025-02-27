@@ -12,57 +12,43 @@ float gx_offset = 0, gy_offset = 0, gz_offset = 0;
 const int flexSensorPins[5] = {A0, A1, A2, A3, A4};
 const float supplyVoltage = 5.0;
 const int pullUpResistor = 15000;
-float baselineResistance[5];
+float minResistance[5];
+float maxResistance[5];
 const float resistanceToAngleFactor = 0.05;
-const float STRAIGHT_THRESHOLD = 45.0;
-const float PARTIALLY_BENT_THRESHOLD = 180.0;
 
 // Touch Sensors
-const int finger1Pin = 50;
-const int finger2Pin = 51;
-const int finger3Pin = 52;
-const int finger4Pin = 53;
+const int finger1Pin = 25;
+const int finger2Pin = 24;
+const int finger3Pin = 23;
+const int finger4Pin = 22;
 
 // Data Structures
-struct GyroData {
+struct SensorData {
   int pitch;
   int roll;
-};
-
-struct FlexSensorData {
   float angles[5];
   String bendStates[5];
+  String touchStates;
 };
 
 // Timing
-unsigned long previousMillisGyro = 0;
-const long intervalGyro = 100; // 100ms
-unsigned long previousMillisFlex = 0;
-const long intervalFlex = 500; // 500ms
-unsigned long previousMillisTouch = 0;
-const long intervalTouch = 50; // 50ms
+unsigned long previousMillis = 0;
+const long interval = 100;
 
 void setup() {
   Serial.begin(115200);
   Wire.begin();
 
-  // Gyro Setup
-  // if (!mpu6500.init()) {
-  //   Serial.println("MPU6500 Connection Failed!");
-  //   while (1);
-  // }
   mpu6500.enableGyrDLPF();
   mpu6500.setGyrDLPF(5);
   mpu6500.setGyrRange(MPU6500_GYRO_RANGE_250);
   mpu6500.setAccRange(MPU6500_ACC_RANGE_4G);
   calibrateMPU();
 
-  // Flex Sensor Setup
   Serial.println("Calibrating Flex Sensors...");
   calibrateFlexSensors();
   Serial.println("Calibration Complete.\n");
 
-  // Touch Sensor Setup
   pinMode(finger1Pin, INPUT_PULLUP);
   pinMode(finger2Pin, INPUT_PULLUP);
   pinMode(finger3Pin, INPUT_PULLUP);
@@ -71,30 +57,16 @@ void setup() {
 
 void loop() {
   unsigned long currentMillis = millis();
-
-  if (currentMillis - previousMillisGyro >= intervalGyro) {
-    previousMillisGyro = currentMillis;
-    GyroData gyroData = readGyro();
-    printGyroData(gyroData);
-  }
-
-  if (currentMillis - previousMillisFlex >= intervalFlex) {
-    previousMillisFlex = currentMillis;
-    FlexSensorData flexData = readFlexSensors();
-    printFlexSensorData(flexData);
-  }
-
-  if (currentMillis - previousMillisTouch >= intervalTouch) {
-    previousMillisTouch = currentMillis;
-    readTouchSensors();
-    Serial.println(); // Add a newline after touch data
+  if (currentMillis - previousMillis >= interval) {
+    previousMillis = currentMillis;
+    SensorData sensorData = readSensors();
+    printSensorData(sensorData);
   }
 }
 
-// Gyro Functions
 void calibrateMPU() {
   Serial.println("Calibrating MPU6500... Hold still.");
-  int samples = 100;
+  int samples = 5;
   for (int i = 0; i < samples; i++) {
     xyzFloat acc = mpu6500.getGValues();
     xyzFloat gyro = mpu6500.getGyrValues();
@@ -115,26 +87,21 @@ void calibrateMPU() {
   Serial.println("Calibration Complete!");
 }
 
-GyroData readGyro() {
-  xyzFloat acc = mpu6500.getGValues();
-  float ax = acc.x - ax_offset;
-  float ay = acc.y - ay_offset;
-  float az = acc.z - az_offset;
-  GyroData data;
-  data.roll = atan2(ay, sqrt(ax * ax + az * az)) * 180.0 / M_PI;
-  data.pitch = atan2(-ax, sqrt(ay * ay + az * az)) * 180.0 / M_PI;
-  return data;
-}
-
-void printGyroData(GyroData data) {
-  Serial.print("Gyro: Pitch=");
-  Serial.print(data.pitch);
-  Serial.print(", Roll=");
-  Serial.println(data.roll);
-}
-
-// Flex Sensor Functions
 void calibrateFlexSensors() {
+  Serial.println("Keep your fingers STRAIGHT and press any key to continue...");
+  while (Serial.available() == 0) {}
+  Serial.read();
+  calibrateResistance(minResistance);
+  Serial.println("Straight position recorded.\n");
+
+  Serial.println("Now BEND your fingers fully and press any key to continue...");
+  while (Serial.available() == 0) {}
+  Serial.read();
+  calibrateResistance(maxResistance);
+  Serial.println("Bent position recorded.\n");
+}
+
+void calibrateResistance(float resistanceArray[5]) {
   for (int i = 0; i < 5; i++) {
     float sumResistance = 0;
     int samples = 5;
@@ -142,26 +109,42 @@ void calibrateFlexSensors() {
       sumResistance += readFlexSensorResistance(flexSensorPins[i]);
       delay(50);
     }
-    baselineResistance[i] = sumResistance / samples;
+    resistanceArray[i] = sumResistance / samples;
   }
 }
 
-FlexSensorData readFlexSensors() {
-  FlexSensorData data;
+SensorData readSensors() {
+  SensorData data;
+  xyzFloat acc = mpu6500.getGValues();
+  float ax = acc.x - ax_offset;
+  float ay = acc.y - ay_offset;
+  float az = acc.z - az_offset;
+  data.roll = atan2(ay, sqrt(ax * ax + az * az)) * 180.0 / M_PI;
+  data.pitch = atan2(-ax, sqrt(ay * ay + az * az)) * 180.0 / M_PI;
+
   for (int i = 0; i < 5; i++) {
     float currentResistance = readFlexSensorResistance(flexSensorPins[i]);
-    float deltaResistance = currentResistance - baselineResistance[i];
-    data.angles[i] = abs(deltaResistance) * resistanceToAngleFactor;
-    if (data.angles[i] < STRAIGHT_THRESHOLD) {
-      data.bendStates[i] = "S";
-    } else if (data.angles[i] >= STRAIGHT_THRESHOLD && data.angles[i] < PARTIALLY_BENT_THRESHOLD) {
-      data.bendStates[i] = "P";
+    float normalizedAngle = map(currentResistance, minResistance[i], maxResistance[i], 0, 180);
+    normalizedAngle = constrain(normalizedAngle, 0, 180);
+    data.angles[i] = normalizedAngle;
+    data.bendStates[i] = (normalizedAngle < 45) ? "S" : "B";
+  }
+
+  data.touchStates = "Touch: ";
+  for (int i = 1; i <= 4; i++) {
+    if (digitalRead(finger1Pin - (i - 1)) == LOW) {
+      data.touchStates += String(i) + ",";
     }
   }
   return data;
 }
 
-void printFlexSensorData(FlexSensorData data) {
+void printSensorData(SensorData data) {
+  Serial.print("Gyro: Pitch=");
+  Serial.print(data.pitch);
+  Serial.print(", Roll=");
+  Serial.println(data.roll);
+  
   Serial.print("Flex: Angles=");
   for (int i = 0; i < 5; i++) {
     Serial.print(data.angles[i], 1);
@@ -173,6 +156,8 @@ void printFlexSensorData(FlexSensorData data) {
     if (i < 4) Serial.print(",");
   }
   Serial.println();
+  
+  Serial.println(data.touchStates);
 }
 
 float readFlexSensorResistance(int pin) {
@@ -187,33 +172,4 @@ float readFlexSensorResistance(int pin) {
   float voltage = sensorValue * (supplyVoltage / 1023.0);
   float resistance = (pullUpResistor * (supplyVoltage - voltage)) / voltage;
   return resistance;
-}
-
-// Touch Sensor Functions
-void readTouchSensors() {
-  bool touched = false;
-  Serial.print("Touch: ");
-  if (digitalRead(finger1Pin) == LOW) {
-    Serial.print("1");
-    touched = true;
-  }
-  if (digitalRead(finger2Pin) == LOW) {
-    if (touched) Serial.print(",2");
-    else Serial.print("2");
-    touched = true;
-  }
-  if (digitalRead(finger3Pin) == LOW) {
-    if (touched) Serial.print(",3");
-    else Serial.print("3");
-    touched = true;
-  }
-  if (digitalRead(finger4Pin) == LOW) {
-    if (touched) Serial.print(",4");
-    else Serial.print("4");
-    touched = true;
-  }
-  if (!touched) {
-      Serial.print("None");
-  }
-
 }
