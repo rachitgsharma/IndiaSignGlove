@@ -127,6 +127,7 @@ void calibrateMPU() {
 void calibrateFlexSensors() {
 Serial.println("Keep your fingers STRAIGHT and press the button to continue...");
 while (digitalRead(buttonPin) == LOW);
+Serial.println(digitalRead(buttonPin));
 calibrateResistance(minResistance);
 Serial.println("Straight position recorded.\n");
 
