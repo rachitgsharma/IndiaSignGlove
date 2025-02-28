@@ -22,13 +22,43 @@ const int finger2Pin = 24;
 const int finger3Pin = 23;
 const int finger4Pin = 22;
 
+//Buttons
+const int emergencyButtonPin = 8;
+const int recordButtonPin = 9;
+
 // Data Structures
 struct SensorData {
   int pitch;
   int roll;
   float angles[5];
   String bendStates[5];
-  String touchStates;
+  int touchStates[4];
+
+  String toJSON() {
+    String json = "{";
+    json += "\"emergency\":" + String(digitalRead(emergencyButtonPin)) +",";
+    json += "\"record\":" + String(digitalRead(recordButtonPin)) +",";
+    json += "\"pitch\": " + String(pitch) + ", ";
+    json += "\"roll\": " + String(roll) + ", ";
+    json += "\"angles\": [";
+    for (int i = 0; i < 5; i++) {
+      json += String(angles[i]);
+      if (i < 4) json += ", ";
+    }
+    json += "], \"bendStates\": [";
+    for (int i = 0; i < 5; i++) {
+      json += "\"" + bendStates[i] + "\"";
+      if (i < 4) json += ", ";
+    }
+     json += "], \"touchStates\": [";
+    for (int i = 0; i < 4; i++) {
+      json += String(touchStates[i]);
+      if (i < 3) json += ", ";
+    }
+    json += "]";
+    json += "}";
+    return json;
+  }
 };
 
 // Timing
@@ -53,6 +83,9 @@ void setup() {
   pinMode(finger2Pin, INPUT_PULLUP);
   pinMode(finger3Pin, INPUT_PULLUP);
   pinMode(finger4Pin, INPUT_PULLUP);
+
+  pinMode(emergencyButtonPin, INPUT);
+  pinMode(recordButtonPin, INPUT);
 }
 
 void loop() {
@@ -60,9 +93,10 @@ void loop() {
   if (currentMillis - previousMillis >= interval) {
     previousMillis = currentMillis;
     SensorData sensorData = readSensors();
-    printSensorData(sensorData);
+    Serial.println(sensorData.toJSON());
   }
 }
+
 
 void calibrateMPU() {
   Serial.println("Calibrating MPU6500... Hold still.");
@@ -130,12 +164,12 @@ SensorData readSensors() {
     data.bendStates[i] = (normalizedAngle < 45) ? "S" : "B";
   }
 
-  data.touchStates = "Touch: ";
-  for (int i = 1; i <= 4; i++) {
-    if (digitalRead(finger1Pin - (i - 1)) == LOW) {
-      data.touchStates += String(i) + ",";
-    }
-  }
+  // Read touch sensors
+  data.touchStates[0] = digitalRead(finger1Pin) == LOW ? 1 : 0;
+  data.touchStates[1] = digitalRead(finger2Pin) == LOW ? 1 : 0;
+  data.touchStates[2] = digitalRead(finger3Pin) == LOW ? 1 : 0;
+  data.touchStates[3] = digitalRead(finger4Pin) == LOW ? 1 : 0;
+
   return data;
 }
 
@@ -157,7 +191,7 @@ void printSensorData(SensorData data) {
   }
   Serial.println();
   
-  Serial.println(data.touchStates);
+  // Serial.println(data.touchStates);
 }
 
 float readFlexSensorResistance(int pin) {
