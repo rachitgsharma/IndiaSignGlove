@@ -17,17 +17,31 @@ float maxResistance[5];
 const float resistanceToAngleFactor = 0.05;
 
 // Touch Sensors
-const int finger1Pin = 25;
-const int finger2Pin = 24;
-const int finger3Pin = 23;
-const int finger4Pin = 22;
+const int finger1Pin = 22;
+const int finger2Pin = 23;
+const int finger3Pin = 24;
+const int finger4Pin = 25;
 
-//Buttons
+// Buttons
 const int emergencyButtonPin = 8;
 const int recordButtonPin = 9;
-const int buttonPin = 2;
-const int button2Pin = 3;
-int buttonState = 0;
+
+// Gesture Patterns
+struct Gesture {
+  String bendStates[5];
+  int touchStates[4];
+  String meaning;
+};
+
+Gesture gestures[] = {
+  { {"S", "S", "S", "S", "S"}, {1, 1, 1, 1}, "હેલો"},
+  { {"B", "B", "S", "S", "S"}, {1, 0, 0, 0}, "કેમ છો?"},
+  { {"S", "S", "S", "B", "B"}, {0, 0, 0, 1}, "તમારું નામ, શું છે?"},
+  { {"B", "S", "S", "B", "B"}, {0, 0, 1, 1}, "આવજો"},
+  { {"B", "S", "S", "B", "S"}, {0, 0, 1, 0}, "આભાર"},
+  { {"B", "S", "S", "S", "S"}, {0, 1, 1, 0}, "હા"},
+  { {"S", "B", "S", "S", "S"}, {1, 1, 0, 0}, "ના"}
+  };
 
 // Data Structures
 struct SensorData {
@@ -53,7 +67,7 @@ struct SensorData {
       json += "\"" + bendStates[i] + "\"";
       if (i < 4) json += ", ";
     }
-     json += "], \"touchStates\": [";
+    json += "], \"touchStates\": [";
     for (int i = 0; i < 4; i++) {
       json += String(touchStates[i]);
       if (i < 3) json += ", ";
@@ -89,8 +103,6 @@ void setup() {
 
   pinMode(emergencyButtonPin, INPUT);
   pinMode(recordButtonPin, INPUT);
-  pinMode(buttonPin, INPUT_PULLUP);
-  pinMode(button2Pin, INPUT_PULLUP);
 }
 
 void loop() {
@@ -99,9 +111,33 @@ void loop() {
     previousMillis = currentMillis;
     SensorData sensorData = readSensors();
     Serial.println(sensorData.toJSON());
+    recognizeGesture(sensorData);
   }
 }
 
+void recognizeGesture(SensorData data) {
+  for (int i = 0; i < sizeof(gestures) / sizeof(gestures[0]); i++) {
+    bool match1 = true;
+    bool match2 = true;
+    for (int j = 0; j < 5; j++) {
+      if (data.bendStates[j] != gestures[i].bendStates[j]) {
+        match1 = false;
+        break;
+      }
+    }
+    for (int j = 0; j < 4; j++) {
+      if (data.touchStates[j] != gestures[i].touchStates[j]) {
+        match2 = false;
+        break;
+      }
+    }
+    if (match1 || match2) {
+      Serial.println("Recognized Gesture: " + gestures[i].meaning);
+      return;
+    }
+  }
+  Serial.println("Gesture not recognized.");
+}
 
 void calibrateMPU() {
   Serial.println("Calibrating MPU6500... Hold still.");
@@ -127,17 +163,17 @@ void calibrateMPU() {
 }
 
 void calibrateFlexSensors() {
-Serial.println("Keep your fingers STRAIGHT and press the button to continue...");
-while (digitalRead(buttonPin) == HIGH);
-calibrateResistance(minResistance);
-Serial.println("Straight position recorded.\n");
+  Serial.println("Keep your fingers STRAIGHT and press any key to continue...");
+  while (Serial.available() == 0) {}
+  Serial.read();
+  calibrateResistance(minResistance);
+  Serial.println("Straight position recorded.\n");
 
-Serial.println("Now BEND your fingers fully and press the button to continue...");
-while (digitalRead(button2Pin) == HIGH);
-calibrateResistance(maxResistance);
-Serial.println("Bent position recorded.\n");
-
-
+  Serial.println("Now BEND your fingers fully and press any key to continue...");
+  while (Serial.available() == 0) {}
+  Serial.read();
+  calibrateResistance(maxResistance);
+  Serial.println("Bent position recorded.\n");
 }
 
 void calibrateResistance(float resistanceArray[5]) {
@@ -211,4 +247,4 @@ float readFlexSensorResistance(int pin) {
   float voltage = sensorValue * (supplyVoltage / 1023.0);
   float resistance = (pullUpResistor * (supplyVoltage - voltage)) / voltage;
   return resistance;
-}
+} 
