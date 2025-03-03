@@ -1,26 +1,37 @@
 import sqlite3
-from tabulate import tabulate
+import os
 
-def view_database():
-    conn = sqlite3.connect("indiaSign_words.db")
-    cursor = conn.cursor()
-    cursor.execute("SELECT * FROM words")
-    rows = cursor.fetchall()
-    conn.close()
-    
-    if not rows:
-        print("⚠️ No data found in the database!")
+def view_words():
+    db_path = "indiaSign_words.db"
+
+    # Check if database file exists
+    if not os.path.exists(db_path):
+        print("❌ Database file not found!")
         return
 
-    headers = [
-        "Gesture ID", "Word", "Hand Image", "Gesture Description", "Sign Image", "Hand", "Hand Orientation",
-        "Res 1", "Res 2", "Res 3", "Res 4", "Res 5",
-        "Bend 1", "Bend 2", "Bend 3", "Bend 4", "Bend 5",
-        "Gyro 1", "Gyro 2", "Gyro 3", "Acc 1", "Acc 2", "Acc 3",
-        "Touch Sensor 1", "Touch Sensor 2", "Touch Sensor 3", "Touch Sensor 4", "Predefined"
-    ]
-    
-    print(tabulate(rows, headers=headers, tablefmt="grid"))
+    # Connect to the database
+    conn = sqlite3.connect(db_path)
+    cursor = conn.cursor()
+
+    # Fetch data from words table
+    try:
+        cursor.execute("SELECT gesture_id, word, gesture_description FROM words")
+        rows = cursor.fetchall()
+
+        if not rows:
+            print("⚠️ No data found in the words table.")
+        else:
+            print("\n✅ Words Table Data:\n")
+            print("{:<10} {:<15} {:<30}".format("ID", "Word", "Description"))
+            print("=" * 55)
+            for row in rows:
+                print("{:<10} {:<15} {:<30}".format(row[0], row[1], row[2]))
+
+    except sqlite3.Error as e:
+        print(f"❌ Database error: {e}")
+
+    # Close the connection
+    conn.close()
 
 if __name__ == "__main__":
-    view_database()
+    view_words()
