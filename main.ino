@@ -17,10 +17,10 @@ float minResistance[5];
 float maxResistance[5];
 
 // Twilio config
-const char* account_sid = "AC615147426efd3724974a757913798c74";
-const char* auth_token = "5fb358d0bb2fa9fd4e225a8a0b65b4f5";
-const char* from_number = "+15075164642";
-const char* to_number = "+919820404354";
+const char* account_sid = "YOUR_ACCOUNT_SID";
+const char* auth_token = "YOUR_AUTH_TOKEN";
+const char* from_number = "YOUR_TWILIO_NUMBER";
+const char* to_number = "RECIPIENT_NUMBER";
 
 // Touch Sensor Pins
 const int finger1Pin = 26;
