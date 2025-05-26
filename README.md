@@ -195,8 +195,9 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 - Labdhi Shah
 - Pratha Patel
 
+---
+
 ## Contact
 
 For questions or suggestions, contact Rachit Sharma.
 
----
