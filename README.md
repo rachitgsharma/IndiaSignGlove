@@ -189,13 +189,6 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 ---
 
-## Acknowledgments
-
-- Uses ESP32 WebServer library
-- Based on Arduino framework
-- Twilio API for SMS notifications
-
----
 ## Contributors
 
 - Rachit Sharma  
