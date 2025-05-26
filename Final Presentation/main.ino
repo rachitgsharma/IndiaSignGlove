@@ -6,8 +6,8 @@
 #include "gesture_webserver.h"
 
 // WiFi Credentials
-const char* ssid = "Ankita";
-const char* password = "aashu1011";
+const char* ssid = "";
+const char* password = "";
 
 // Flex Sensor Pins
 const int flexSensorPins[5] = {36, 34, 35, 32, 33};
