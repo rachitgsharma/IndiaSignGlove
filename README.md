@@ -3,7 +3,7 @@
 
 IndiaSignGlove is a smart wearable glove project designed to recognize Indian sign language gestures and translate them into Gujarati words. It uses flex sensors and touch sensors to detect hand gestures, sends recognized words to a webserver, and can send emergency SMS alerts via Twilio.
 
----
+
 
 ## Features
 
@@ -13,7 +13,7 @@ IndiaSignGlove is a smart wearable glove project designed to recognize Indian si
 - Sends emergency SMS alerts via Twilio when the emergency button is pressed.
 - Calibrates flex sensors for accurate gesture detection.
 
----
+
 
 ## Hardware Setup
 
@@ -22,7 +22,7 @@ IndiaSignGlove is a smart wearable glove project designed to recognize Indian si
 - 4 Touch sensors connected to digital pins: 26, 27, 14, 12
 - Emergency button connected to digital pin 23
 
----
+
 
 ## Software Overview
 
@@ -40,7 +40,7 @@ IndiaSignGlove is a smart wearable glove project designed to recognize Indian si
 - `twilio_sms.h`  
   Sends SMS messages using Twilio API over HTTPS.
 
----
+
 
 ### Gesture Recognition
 
@@ -51,20 +51,19 @@ Example pattern:
 S B S S S | 0 0 0 0  -> "છે"
 ```
 
----
+
 
 ### Webserver
 
 - Runs on port 80.
 - Serves the last recognized Gujarati word as plain text on the root path `/`.
 
----
+
 
 ### Emergency SMS
 
 - When the emergency button is pressed, an SMS alert is sent to the configured phone number via Twilio.
 
----
 
 ## How to Use
 
@@ -90,7 +89,7 @@ S B S S S | 0 0 0 0  -> "છે"
 
 6. Press the emergency button to send an emergency SMS.
 
----
+
 
 ## Calibration
 
@@ -101,7 +100,7 @@ During startup, the device will prompt you to:
 
 This calibrates the min and max resistance values for the flex sensors.
 
----
+
 
 ## Code Snippets
 
@@ -135,13 +134,12 @@ bool sendSMS(String message) {
   // Uses WiFiClientSecure to POST message to Twilio API
 }
 ```
----
+
 
 ## Mobile App (MIT App Inventor)
 
 To provide a seamless user experience, IndiaSignGlove is paired with an intuitive Android mobile application built using MIT App Inventor. This app serves as the visual and auditory interface between the glove and the user, enabling real-time gesture recognition feedback and emergency alerts.
 
----
 
 ### Features 
 
@@ -156,7 +154,7 @@ To provide a seamless user experience, IndiaSignGlove is paired with an intuitiv
 - Error Handling
   Built-in blocks to handle connectivity issues gracefully.
 
----
+
 
 ### IndiaSign Glove App UI
 
@@ -168,26 +166,26 @@ To provide a seamless user experience, IndiaSignGlove is paired with an intuitiv
 
 ![IndiaSign Glove App - Gesture Recognised](./Images/GestureDisplay.jpg)
 
---- 
+ 
 
 ### Communication
 
 - ESP32 must run a webserver serving gesture data.
 - The app sends requests to `http://<ESP_IP>/` every second to read the recognized word.
 
----
+
 
 ### App Deployment 
 
 - Export `.apk` from MIT App Inventor for direct installation.
 
---- 
+
 
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
----
+
 
 ## Contributors
 
@@ -195,7 +193,7 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 - Labdhi Shah
 - Pratha Patel
 
----
+
 
 ## Contact
 
