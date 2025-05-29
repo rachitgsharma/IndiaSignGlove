@@ -181,12 +181,6 @@ To provide a seamless user experience, IndiaSignGlove is paired with an intuitiv
 
 
 
-## License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
-
-
 ## Contributors
 
 - Rachit Sharma  
