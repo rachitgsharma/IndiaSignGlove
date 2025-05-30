@@ -186,9 +186,9 @@ To provide a seamless user experience, IndiaSignGlove is paired with an intuitiv
 
 ## Contributors
 
-- Rachit Sharma  
-- Labdhi Shah
-- Pratha Patel
+- [Rachit Sharma](https://github.com/rachitgsharma)
+- [Labdhi Shah](https://github.com/labdhibshah)
+- [Pratha Patel](https://github.com/Pratha26)
 
 ## Contact
 
